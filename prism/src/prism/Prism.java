@@ -288,6 +288,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	
 	// Info for explicit files load
 	private File explicitFilesStatesFile = null;
+	private File explicitFilesPlayersFile = null;
 	private File explicitFilesTransFile = null;
 	private File explicitFilesLabelsFile = null;
 	private List<File> explicitFilesStateRewardsFiles = new ArrayList<>();
@@ -1805,7 +1806,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 	 * @param stateRewardsFiles Files containing state reward definitions (optional, can be null)
 	 * @param typeOverride Model type (auto-detected if {@code null})
 	 */
-	public void loadModelFromExplicitFiles(File statesFile, File transFile, File labelsFile, List<File> stateRewardsFiles, ModelType typeOverride) throws PrismException
+	public void loadModelFromExplicitFiles(File statesFile, File transFile, File labelsFile, List<File> stateRewardsFiles, File playersFile, ModelType typeOverride) throws PrismException
 	{
 		currentModelSource = ModelSource.EXPLICIT_FILES;
 		// Clear any existing built model(s)
@@ -1818,6 +1819,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 		currentRewardGenerator = ef2mi.buildRewardInfo((stateRewardsFiles == null || stateRewardsFiles.isEmpty()) ? null : stateRewardsFiles.get(0));
 		// Store explicit files info for later
 		explicitFilesStatesFile = statesFile;
+		explicitFilesPlayersFile = playersFile;
 		explicitFilesTransFile = transFile;
 		explicitFilesLabelsFile = labelsFile;
 		explicitFilesStateRewardsFiles = stateRewardsFiles == null ? new ArrayList<>() : new ArrayList<>(stateRewardsFiles);
@@ -2102,7 +2104,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 					break;
 				case EXPLICIT_FILES:
 					ExplicitFiles2Model expf2model = new ExplicitFiles2Model(this);
-					currentModelExpl = expf2model.build(explicitFilesStatesFile, explicitFilesTransFile, explicitFilesLabelsFile, currentModelInfo, explicitFilesNumStates);
+					currentModelExpl = expf2model.build(explicitFilesStatesFile, explicitFilesTransFile, explicitFilesLabelsFile, explicitFilesPlayersFile, currentModelInfo, explicitFilesNumStates);
 					currentModel = null;
 					currentModelBuildType = ModelBuildType.EXPLICIT;
 					// Also build a Model/RewardGenerator
@@ -3027,6 +3029,40 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 
 		// Export (explicit engine only)
 		((PartiallyObservableModel<?>) currentModelExpl).exportObservations(exportType, currentModelInfo, tmpLog);
+
+		// Tidy up
+		if (file != null)
+			tmpLog.close();
+	}
+
+	public void exportPlayersToFile(int exportType, File file) throws FileNotFoundException, PrismException
+	{
+		PrismLog tmpLog;
+
+		// No specific states format for MRMC
+		if (exportType == EXPORT_MRMC)
+			exportType = EXPORT_PLAIN;
+		// Rows format does not apply to states output
+		if (exportType == EXPORT_ROWS)
+			exportType = EXPORT_PLAIN;
+
+		// Build model, if necessary
+		buildModelIfRequired();
+
+		// Print message
+		mainLog.print("\nExporting list of players ");
+		mainLog.print(getStringForExportType(exportType) + " ");
+		mainLog.println(getDestinationStringForFile(file));
+
+		// Create new file log or use main log
+		tmpLog = getPrismLogForFile(file);
+
+		// Export
+		if (!getExplicit()) {
+			currentModel.exportPlayers(exportType, tmpLog);
+		} else {
+			currentModelExpl.exportPlayers(exportType, currentModelInfo.createVarList(), tmpLog);
+		}
 
 		// Tidy up
 		if (file != null)

@@ -250,6 +250,12 @@ public class SubNondetModel<Value> implements NondetModel<Value>
 	}
 
 	@Override
+	public void exportPlayers(int exportType, VarList varList, PrismLog log) throws PrismException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public String infoString()
 	{
 		throw new UnsupportedOperationException();

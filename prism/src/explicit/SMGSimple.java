@@ -176,6 +176,15 @@ public class SMGSimple<Value> extends MDPSimple<Value> implements SMG<Value>
 	}
 	
 	// Accessors (for STPG)
+
+	// // @Override
+	// public List<String> getPlayerNames() {
+	// 	List<String> my_list = new ArrayList<String>();
+	// 	for(int i = 0; i < playerInfo.getPlayerNames().size(); i++) {
+	// 		my_list.add(playerInfo.getPlayerNames().get(i));
+	// 	}
+	// 	return my_list;
+	// }
 	
 	@Override
 	public int getPlayer(int s)

@@ -30,7 +30,9 @@ package prism;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import explicit.SMG;
 import parser.EvaluateContext;
 import parser.Values;
 import parser.VarList;
@@ -467,7 +469,14 @@ public interface ModelInfo
 	 * Get the names of all the players in the model.
 	 */
 	public default List<String> getPlayerNames()
-	{
+	{	
+		if(getModelType() == ModelType.SMG) {
+			List<String> my_l = new ArrayList<String>();
+			my_l.add("1");
+			my_l.add("2");
+			return my_l;
+		}
+		
 		// Assume just one (unnamed) player for nondeterministic models
 		if (getModelType().nondeterministic()) {
 			return Collections.singletonList("");

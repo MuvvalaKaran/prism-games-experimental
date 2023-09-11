@@ -279,6 +279,8 @@ public interface Model
 
 	void exportStates(int exportType, PrismLog log);
 
+	void exportPlayers(int exportType, PrismLog log);
+
 	void clear();
 }
 

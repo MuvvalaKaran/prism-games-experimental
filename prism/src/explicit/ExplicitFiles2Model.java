@@ -39,11 +39,12 @@ import java.util.Map.Entry;
 
 import common.IterableStateSet;
 import parser.State;
-import prism.ModelInfo;
-import prism.PrismComponent;
-import prism.PrismException;
-import prism.PrismNotSupportedException;
-import prism.PrismSettings;
+// import prism.ModelInfo;
+// import prism.PrismComponent;
+// import prism.PrismException;
+// import prism.PrismNotSupportedException;
+// import prism.PrismSettings;
+import prism.*;
 
 /**
  * Class to convert explicit-state file storage of a model to a model of the explicit engine.
@@ -86,11 +87,12 @@ public class ExplicitFiles2Model extends PrismComponent
 	 * @param statesFile .sta file (optional, may be {@code null})
 	 * @param transFile .tra file
 	 * @param labelsFile .lab file (optional, may be {@code null})
+	 * @param playersFile .pla file (optional, may be {@code null})
 	 * @param modelInfo model info (normally created with ExplicitFiles2ModelInfo)
 	 * @param numStates number of states
 	 * @return the constructed model
 	 */
-	public Model<?> build(File statesFile, File transFile, File labelsFile, ModelInfo modelInfo, int numStates) throws PrismException
+	public Model<?> build(File statesFile, File transFile, File labelsFile, File playersFile, ModelInfo modelInfo, int numStates) throws PrismException
 	{
 		ModelExplicit<?> model = null;
 		switch (modelInfo.getModelType()) {
@@ -123,8 +125,16 @@ public class ExplicitFiles2Model extends PrismComponent
 		case LTS:
 		case PTA:
 		case SMG:
+			SMGSimple<Double> smg = new SMGSimple<>();
+			smg.buildFromPrismExplicit(transFile.getAbsolutePath());
+			model = smg;
+			break;
 		case STPG:
-			throw new PrismNotSupportedException("Currently, importing " + modelInfo.getModelType() + " is not supported");
+			// throw new PrismNotSupportedException("Currently, importing " + modelInfo.getModelType() + " is not supported");
+			STPGAbstrSimple<Double> stpg = new STPGAbstrSimple<>();
+			stpg.buildFromPrismExplicit(transFile.getAbsolutePath());
+			model = stpg;
+			break;
 		}
 		if (model == null) {
 			throw new PrismException("Could not import " + modelInfo.getModelType());
@@ -160,6 +170,22 @@ public class ExplicitFiles2Model extends PrismComponent
 				states.add(s);
 			}
 			model.setStatesList(states);
+		}
+
+		if(modelInfo.getModelType() == ModelType.STPG || modelInfo.getModelType() == ModelType.SMG) {
+			// STPGAbstrSimple<Double> stpg = (STPGAbstrSimple) model;
+			// int n = model.getNumStates();
+			SMGSimple<Double> smg = (SMGSimple) model;
+			// stpg.instantiateStateOwners();
+			if(playersFile != null) {
+				loadPlayers(model, playersFile, modelInfo);
+			} else {
+				for (int i = 0; i < model.getNumStates(); i++) {
+					smg.setPlayer(i, 1);
+				}
+			}
+		} else {
+			//unless it's a stochatic game, do nothing
 		}
 
 		return model;
@@ -245,6 +271,50 @@ public class ExplicitFiles2Model extends PrismComponent
 			throw new PrismException("File I/O error reading from \"" + statesFile + "\"");
 		} catch (PrismException e) {
 			throw new PrismException("Error detected " + e.getMessage() + "at line " + lineNum + " of states file \"" + statesFile + "\"");
+		}
+	}
+
+	/** Load the state information, construct the statesList and attach to model */
+	private void loadPlayers(ModelExplicit<?> model, File playersFile, ModelInfo modelInfo) throws PrismException
+	{
+		if(model.getModelType() != ModelType.STPG && model.getModelType() != ModelType.SMG) {
+			throw new PrismException("Can only set players for STPGs or SMGs.");
+		}
+		int numStates = model.getNumStates();
+		if(numStates == 0) {
+			throw new PrismException("There are 0 states. Please build the model before setting players.");
+		}
+
+		// STPGAbstrSimple<Double> stpg = (STPGAbstrSimple) model;
+		SMGSimple<Double> smg = (SMGSimple) model;
+		String s, ss[];
+		int i, j, lineNum = 0;
+		smg.addStates(numStates);
+
+		// open file for reading, automatic close when done
+		try (BufferedReader in = new BufferedReader(new FileReader(playersFile))) {
+			// skip first line
+			in.readLine();
+			lineNum = 1;
+			// read remaining lines
+			s = in.readLine();
+			lineNum++;
+			while (s != null) {
+				// skip blank lines
+				s = s.trim();
+				if (s.length() > 0) {
+					// split into two parts
+					ss = s.split(":");
+					// determine which state this line describes
+					i = Integer.parseInt(ss[0]);
+					smg.setPlayer(Integer.parseInt(ss[0]), Integer.parseInt(ss[1]));
+				}
+				// read next line
+				s = in.readLine();
+				lineNum++;
+			}
+		} catch (IOException e) {
+			throw new PrismException("File I/O error reading from \"" + playersFile + "\"");
 		}
 	}
 }

@@ -74,6 +74,7 @@ public class PrismCL implements PrismModelListener
 	private boolean importtrans = false;
 	private boolean importstates = false;
 	private boolean importlabels = false;
+	private boolean importplayers = false;
 	private boolean importstaterewards = false;
 	private boolean importinitdist = false;
 	private boolean importresults = false;
@@ -84,6 +85,7 @@ public class PrismCL implements PrismModelListener
 	private boolean exportstaterewards = false;
 	private boolean exporttransrewards = false;
 	private boolean exportstates = false;
+	private boolean exportplayers = false;
 	private boolean exportobservations = false;
 	private boolean exportmodellabels = false;
 	private boolean exportmodelproplabels = false;
@@ -136,6 +138,7 @@ public class PrismCL implements PrismModelListener
 	private String settingsFilename = null;
 	private String modelFilename = null;
 	private String importStatesFilename = null;
+	private String importPlayersFilename = null;
 	private String importLabelsFilename = null;
 	private List<String> importStateRewardsFilenames = new ArrayList<>();
 	private String importInitDistFilename = null;
@@ -146,6 +149,7 @@ public class PrismCL implements PrismModelListener
 	private String exportStateRewardsFilename = null;
 	private String exportTransRewardsFilename = null;
 	private String exportStatesFilename = null;
+	private String exportPlayersFilename = null;
 	private String exportObservationsFilename = null;
 	private String exportModelLabelsFilename = null;
 	private String exportPropLabelsFilename = null;
@@ -652,7 +656,7 @@ public class PrismCL implements PrismModelListener
 	private void doParsing()
 	{
 		int i;
-		File sf = null, lf = null;
+		File sf = null, lf = null, plf = null;
 		List<File> srf = new ArrayList<>();
 
 		// parse model
@@ -676,6 +680,10 @@ public class PrismCL implements PrismModelListener
 					mainLog.print(", \"" + importStatesFilename + "\"");
 					sf = new File(importStatesFilename);
 				}
+				if (importplayers) {
+					mainLog.print(", \"" + importPlayersFilename + "\"");
+					plf = new File(importPlayersFilename);
+				}
 				if (importlabels) {
 					mainLog.print(", \"" + importLabelsFilename + "\"");
 					lf = new File(importLabelsFilename);
@@ -687,7 +695,7 @@ public class PrismCL implements PrismModelListener
 					}
 				}
 				mainLog.println("...");
-				prism.loadModelFromExplicitFiles(sf, new File(modelFilename), lf, srf, typeOverride);
+				prism.loadModelFromExplicitFiles(sf, new File(modelFilename), lf, srf, plf, typeOverride);
 			} else {
 				mainLog.print("\nParsing model file \"" + modelFilename + "\"...\n");
 				modulesFile = prism.parseModelFile(new File(modelFilename), typeOverride);
@@ -865,6 +873,20 @@ public class PrismCL implements PrismModelListener
 			// in case of error, report it and proceed
 			catch (FileNotFoundException e) {
 				error("Couldn't open file \"" + exportObservationsFilename + "\" for output");
+			} catch (PrismException e) {
+				error(e);
+			}
+		}
+
+		// export players at each state
+		if (exportplayers) {
+			try {
+				File f = (exportPlayersFilename.equals("stdout")) ? null : new File(exportPlayersFilename);
+				prism.exportPlayersToFile(exportType, f);
+			}
+			// in case of error, report it and proceed
+			catch (FileNotFoundException e) {
+				error("Couldn't open file \"" + exportPlayersFilename + "\" for output");
 			} catch (PrismException e) {
 				error(e);
 			}
@@ -1440,6 +1462,15 @@ public class PrismCL implements PrismModelListener
 						errorAndExit("No file specified for -" + sw + " switch");
 					}
 				}
+				// import player for explicit model import
+				else if (sw.equals("importplayers")) {
+					if (i < args.length - 1) {
+						importplayers = true;
+						importPlayersFilename = args[++i];
+					} else {
+						errorAndExit("No file specified for -" + sw + " switch");
+					}
+				}
 				// import labels for explicit model import
 				else if (sw.equals("importlabels")) {
 					if (i < args.length - 1) {
@@ -1488,6 +1519,14 @@ public class PrismCL implements PrismModelListener
 				// override model type to ctmc
 				else if (sw.equals("ctmc")) {
 					typeOverride = ModelType.CTMC;
+				}
+				// override model type to smg
+				else if (sw.equals("smg")) {
+					typeOverride = ModelType.SMG;
+				}
+				// override model type to smg
+				else if (sw.equals("stpg")) {
+					typeOverride = ModelType.STPG;
 				}
 
 				// EXPORT OPTIONS:
@@ -1601,6 +1640,16 @@ public class PrismCL implements PrismModelListener
 						errorAndExit("No file specified for -" + sw + " switch");
 					}
 				}
+				// export players
+				else if (sw.equals("exportplayers")) {
+					if (i < args.length - 1) {
+						exportplayers = true;
+						exportPlayersFilename = args[++i];
+					} else {
+						errorAndExit("No file specified for -" + sw + " switch");
+					}
+				}
+
 				// export observations
 				else if (sw.equals("exportobs")) {
 					if (i < args.length - 1) {
@@ -2259,6 +2308,9 @@ public class PrismCL implements PrismModelListener
 			} else if (ext.equals("sta")) {
 				exportstates = true;
 				exportStatesFilename = basename.equals("stdout") ? "stdout" : basename + ".sta";
+			} else if (ext.equals("pla")){
+				exportplayers = true;
+				exportPlayersFilename = basename.equals("stdout") ? "stdout" : basename + ".pla";
 			} else if (ext.equals("obs")) {
 				exportobservations = true;
 				exportObservationsFilename = basename.equals("stdout") ? "stdout" : basename + ".obs";
@@ -2559,6 +2611,8 @@ public class PrismCL implements PrismModelListener
 				exportTransRewardsFilename = exportTransRewardsFilename.replaceFirst("modelFileBasename", modelFileBasename);
 			if (exportstates)
 				exportStatesFilename = exportStatesFilename.replaceFirst("modelFileBasename", modelFileBasename);
+			if (exportplayers)
+				exportPlayersFilename = exportPlayersFilename.replaceFirst("modelFileBasename", modelFileBasename);
 			if (exportobservations)
 				exportObservationsFilename = exportObservationsFilename.replaceFirst("modelFileBasename", modelFileBasename);
 			if (exportmodellabels)
@@ -2727,12 +2781,15 @@ public class PrismCL implements PrismModelListener
 		mainLog.println("-importmodel <files> ........... Import the model directly from text file(s)");
 		mainLog.println("-importtrans <file> ............ Import the transition matrix directly from a text file");
 		mainLog.println("-importstates <file>............ Import the list of states directly from a text file");
+		mainLog.println("-importplayers <file>........... Import the list of players for each state directly from a text file");
 		mainLog.println("-importlabels <file>............ Import the list of labels directly from a text file");
 		mainLog.println("-importstaterewards <file>...... Import the state rewards directly from a text file");
 		mainLog.println("-importinitdist <file>.......... Specify initial probability distribution for transient/steady-state analysis");
 		mainLog.println("-dtmc .......................... Force imported/built model to be a DTMC");
 		mainLog.println("-ctmc .......................... Force imported/built model to be a CTMC");
 		mainLog.println("-mdp ........................... Force imported/built model to be an MDP");
+		mainLog.println("-smg ........................... Force imported/built model to be an SMG");
+		mainLog.println("-stpg .......................... Force imported/built model to be an STPG");
 		mainLog.println("-importresults <file> .......... Import results from a data frame stored in CSV file");
 		mainLog.println();
 		mainLog.println("EXPORTS:");
@@ -2744,6 +2801,7 @@ public class PrismCL implements PrismModelListener
 		mainLog.println("-exporttransrewards <file> ..... Export the transition rewards matrix to a file");
 		mainLog.println("-exportrewards <file1> <file2>.. Export state/transition rewards to files 1/2");
 		mainLog.println("-exportstates <file> ........... Export the list of reachable states to a file");
+		mainLog.println("-exportplayers <file> .......... Export the player for each states to a file");
 		mainLog.println("-exportobs <file> .............. Export the list of observations to a file");
 		mainLog.println("-exportlabels <file[:options]> . Export the list of labels and satisfying states to a file");
 		mainLog.println("-exportproplabels <file[:opt]> . Export the list of labels and satisfying states from the properties file to a file");

@@ -417,6 +417,19 @@ public abstract class ModelExplicit<Value> implements Model<Value>
 	}
 
 	@Override
+	public void exportPlayers(int exportType, VarList varList, PrismLog log) throws PrismException
+	{
+		//Unless it's a stochastic game, we only have player 0.
+		log.println(numStates);
+		for (int i = 0; i < numStates; i++) {
+			if (exportType != Prism.EXPORT_MATLAB)
+				log.println(i + ":1" + statesList.get(i));
+			else
+				log.println("1");
+		}
+	}
+
+	@Override
 	public boolean equals(Object o)
 	{
 		if (o == null || !(o instanceof ModelExplicit))

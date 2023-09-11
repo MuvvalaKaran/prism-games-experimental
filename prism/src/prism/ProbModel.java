@@ -916,6 +916,18 @@ public class ProbModel implements Model
 			log.println("];");
 	}
 
+	@Override
+	public void exportPlayers(int exportType, PrismLog log)
+	{
+		// Unless this is a SMG, all states are player 1
+		//TODO: when we implement symbolic SMGs, we need to 
+		//override this method in that class
+		StateList sl = getReachableStates();
+		for(int i = 0; i < sl.size(); i++) {
+			  log.println(i + ": 1");
+		}
+	}
+
 	// convert global state index to local indices
 
 	public String globalToLocal(long x)

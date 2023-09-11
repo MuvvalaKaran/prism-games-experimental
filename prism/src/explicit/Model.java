@@ -165,6 +165,11 @@ public interface Model<Value>
 		}
 		return labels;
 	}
+
+	// public default List<String> getPlayerNames() {
+	// 	System.out.println("Warning, getPlayerNames not implemented for model type!");
+	// 	return new ArrayList<String>();
+	// }
 	
 	/**
 	 * Get the total number of transitions in the model.
@@ -636,6 +641,13 @@ public interface Model<Value>
 	 * Export states list.
 	 */
 	public void exportStates(int exportType, VarList varList, PrismLog log) throws PrismException;
+
+	/**
+	 * Export player at each state (for SMG).
+	 */
+	public default void exportPlayers(int exportType, VarList varList, PrismLog log) throws PrismException {
+		throw new PrismException("Model type does not support exporting players");
+	}
 	
 	/**
 	 * Report info/stats about the model as a string.

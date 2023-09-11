@@ -42,9 +42,8 @@ import java.util.Map.Entry;
 import common.IterableStateSet;
 import explicit.rewards.STPGRewards;
 import explicit.rewards.STPGRewardsNestedSimple;
-import prism.PrismException;
-import prism.PrismLog;
-import prism.PrismUtils;
+import parser.VarList;
+import prism.*;
 import strat.MDStrategy;
 
 /**
@@ -77,6 +76,8 @@ public class STPGAbstrSimple<Value> extends ModelExplicit<Value> implements STPG
 	protected int numTransitions;
 	protected int maxNumDistrSets;
 	protected int maxNumDistrs;
+
+	protected StateOwnersSimple stateOwners;
 
 	/**
 	 * Constructor: empty STPG.
@@ -114,6 +115,13 @@ public class STPGAbstrSimple<Value> extends ModelExplicit<Value> implements STPG
 
 	// Mutators (for ModelSimple)
 
+	// public List<String> getPlayerNames() {
+	// 	List<String> my_list = new ArrayList<String>();
+	// 	my_list.add("1");
+	// 	my_list.add("2");
+	// 	return my_list;
+	// }
+
 	@Override
 	public void initialise(int numStates)
 	{
@@ -125,6 +133,14 @@ public class STPGAbstrSimple<Value> extends ModelExplicit<Value> implements STPG
 			trans.add(new ArrayList<>());
 		}
 	}
+
+	public void instantiateStateOwners() {
+	    int n = getNumStates();
+        stateOwners = new StateOwnersSimple(n);
+        // for(int i = 0; i < n; i++) {
+        // 	stateOwners.add(1);
+		// }
+    }
 
 	@Override
 	public void clearState(int i)
@@ -160,6 +176,29 @@ public class STPGAbstrSimple<Value> extends ModelExplicit<Value> implements STPG
 			trans.add(new ArrayList<>());
 		}
 		numStates += numToAdd;
+	}
+
+	public void setPlayer(int s, int p) throws PrismException {
+		if(p < 1 || p > 2) {
+			throw new PrismException("Player must be 1 or 2 for STPG.");
+		}
+		if(s < 0 || s >= getNumStates()) {
+			throw new PrismException("s must be a valid state in the STPG.");
+		}
+		stateOwners.setPlayer(s, p);
+	}
+
+	@Override
+	public void exportPlayers(int exportType, VarList varList, PrismLog log) throws PrismException
+	{
+		//Unless it's a stochastic game, we only have player 0.
+		log.println(numStates);
+		for (int i = 0; i < numStates; i++) {
+			if (exportType != Prism.EXPORT_MATLAB)
+				log.println(i + ":" + stateOwners.getPlayer(i));
+			else
+				log.println(stateOwners.getPlayer(i));
+		}
 	}
 
 	@Override
@@ -241,6 +280,105 @@ public class STPGAbstrSimple<Value> extends ModelExplicit<Value> implements STPG
 			throw new PrismException("Problem in .tra file (line " + lineNum + ") for " + getModelType());
 		}
 	}
+	// public void buildFromPrismExplicit(String filename) throws PrismException
+	// {
+	// 	// we want to accurately store the model as it appears
+	// 	// in the file, so we allow dupes
+	// 	allowDupes = true;
+
+	// 	int lineNum = 0;
+	// 	// Open file for reading, automatic close
+	// 	try (BufferedReader in = new BufferedReader(new FileReader(new File(filename)))) {
+	// 		// Parse first line to get num states
+	// 		String info = in.readLine();
+	// 		lineNum = 1;
+	// 		if (info == null) {
+	// 			throw new PrismException("Missing first line of .tra file");
+	// 		}
+	// 		String[] infos = info.split(" ");
+	// 		if (infos.length < 3) {
+	// 			throw new PrismException("First line of .tra file must read #states, #choices, #transitions");
+	// 		}
+	// 		int n = Integer.parseInt(infos[0]);
+	// 		int expectedNumChoices = Integer.parseInt(infos[1]);
+	// 		int expectedNumTransitions = Integer.parseInt(infos[2]);
+
+	// 		int emptyDistributions = 0;
+
+	// 		// Initialise
+	// 		initialise(n);
+	// 		// Go though list of transitions in file
+	// 		String s = in.readLine();
+	// 		lineNum++;
+	// 		while (s != null) {
+	// 			s = s.trim();
+	// 			if (s.length() > 0) {
+	// 				String[] transition = s.split(" ");
+	// 				int source = Integer.parseInt(transition[0]);
+	// 				int choice = Integer.parseInt(transition[1]);
+	// 				int target = Integer.parseInt(transition[2]);
+	// 				double prob = Double.parseDouble(transition[3]);
+
+	// 				if (source < 0 || source >= numStates) {
+	// 					throw new PrismException("Problem in .tra file (line " + lineNum + "): illegal source state index " + source);
+	// 				}
+	// 				if (target < 0 || target >= numStates) {
+	// 					throw new PrismException("Problem in .tra file (line " + lineNum + "): illegal target state index " + target);
+	// 				}
+
+	// 				// ensure distributions for all choices up to choice (inclusive) exist
+	// 				// this potentially creates empty distributions that are never defined
+	// 				// so we keep track of the number of distributions that are still empty
+	// 				// and provide an error message if there are still empty distributions
+	// 				// after having read the full .tra file
+	// 				while (choice >= getNumChoices(source)) {
+	// 					addChoice(source, new Distribution());
+	// 					emptyDistributions++;
+	// 				}
+
+	// 				if (trans.get(source).get(choice).isEmpty()) {
+	// 					// was empty distribution, becomes non-empty below
+	// 					emptyDistributions--;
+	// 				}
+	// 				// add transition
+	// 				if (! trans.get(source).get(choice).add(target, prob)) {
+	// 					numTransitions++;
+	// 				} else {
+	// 					throw new PrismException("Problem in .tra file (line " + lineNum + "): redefinition of probability for " + source + " " + choice + " " + target);
+	// 				}
+
+	// 				// add action
+	// 				if (transition.length > 4) {
+	// 					String action = transition[4];
+	// 					Object oldAction = getAction(source, choice);
+	// 					if (oldAction != null && !action.equals(oldAction)) {
+	// 						throw new PrismException("Problem in .tra file (line " + lineNum + "):"
+	// 								+ "inconsistent action label for " + source + ", " + choice + ": "
+	// 								+ oldAction + " and " + action);
+	// 					}
+	// 					setAction(source, choice, action);
+	// 				}
+	// 			}
+	// 			s = in.readLine();
+	// 			lineNum++;
+	// 		}
+	// 		// check integrity
+	// 		if (getNumChoices() != expectedNumChoices) {
+	// 			throw new PrismException("Problem in .tra file: unexpected number of choices: " + getNumChoices());
+	// 		}
+	// 		if (getNumTransitions() != expectedNumTransitions) {
+	// 			throw new PrismException("Problem in .tra file: unexpected number of transitions: " + getNumTransitions());
+	// 		}
+	// 		assert(emptyDistributions >= 0);
+	// 		if (emptyDistributions > 0) {
+	// 			throw new PrismException("Problem in .tra file: there are " + emptyDistributions + " empty distribution, are there gaps in the choice indices?");
+	// 		}
+	// 	} catch (IOException e) {
+	// 		throw new PrismException("File I/O error reading from \"" + filename + "\": " + e.getMessage());
+	// 	} catch (NumberFormatException e) {
+	// 		throw new PrismException("Problem in .tra file (line " + lineNum + ") for " + getModelType());
+	// 	}
+	// }
 
 	// Mutators (other)
 
