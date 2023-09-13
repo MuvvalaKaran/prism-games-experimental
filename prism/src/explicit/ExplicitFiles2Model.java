@@ -126,11 +126,8 @@ public class ExplicitFiles2Model extends PrismComponent
 		case PTA:
 		case SMG:
 			SMGSimple<?> smg = new SMGSimple<>();
-			System.out.println("# of states before Calling buildFromPrismExplicit()" + smg.getNumStates());
 			smg.buildFromPrismExplicit(transFile.getAbsolutePath());
-			System.out.println("# of states after Calling buildFromPrismExplicit())" + smg.getNumStates());
 			model = smg;
-			System.out.println(" StateOnwers os State Zero is:" + smg.stateOwners.getPlayer(0));
 			break;
 		case STPG:
 			// throw new PrismNotSupportedException("Currently, importing " + modelInfo.getModelType() + " is not supported");
@@ -146,7 +143,6 @@ public class ExplicitFiles2Model extends PrismComponent
 		if (model.getNumStates() == 0) {
 			throw new PrismNotSupportedException("Imported model has no states, not supported");
 		}
-		System.out.println("Labels file" + labelsFile);
 		if (labelsFile != null) {
 			// load labels
 			loadLabels(model, labelsFile);
@@ -160,7 +156,7 @@ public class ExplicitFiles2Model extends PrismComponent
 		}
 
 		model.findDeadlocks(fixdl);
-		System.out.println("States file" + statesFile);
+
 		if (statesFile != null) {
 			loadStates(model, statesFile, modelInfo);
 		} else {
@@ -178,19 +174,10 @@ public class ExplicitFiles2Model extends PrismComponent
 		List<String> playerNames = new ArrayList<>();
 		playerNames.add("0");
 		playerNames.add("1");
-		System.out.println("Player Names:" + playerNames);
 		((PlayerInfoOwner) model).setPlayerNames(playerNames);
 
 		if(modelInfo.getModelType() == ModelType.STPG || modelInfo.getModelType() == ModelType.SMG) {
 			SMGSimple smg = (SMGSimple) model;
-			// System.out.println("Num of states " + model.getNumStates());
-			// for (int i = 0; i < model.getNumStates(); i++) {
-			// 		// smg.setPlayer(i, 1);
-			// 	System.out.println(smg.getPlayer(i));
-			// }
-			// smg.addStates(model.getNumStates());
-			
-			// System.out.println("Players file" + playersFile);
 			if(playersFile != null) {
 				loadPlayers(model, playersFile, modelInfo);
 			} else {
@@ -296,21 +283,12 @@ public class ExplicitFiles2Model extends PrismComponent
 			throw new PrismException("Can only set players for STPGs or SMGs.");
 		}
 		int numStates = model.getNumStates();
-		System.out.println("************************");
-		System.out.println(numStates);
-		System.out.println("************************");
 		if(numStates == 0) {
 			throw new PrismException("There are 0 states. Please build the model before setting players.");
 		}
-
-		// STPGAbstrSimple<Double> stpg = (STPGAbstrSimple) model;
 		SMGSimple smg = (SMGSimple) model;
-		System.out.println("************************");
-		System.out.println(smg.getNumStates());
-		System.out.println("************************");
 		String s, ss[];
 		int i, j, lineNum = 0;
-		// smg.addStates(numStates);
 
 		// open file for reading, automatic close when done
 		try (BufferedReader in = new BufferedReader(new FileReader(playersFile))) {
@@ -337,12 +315,5 @@ public class ExplicitFiles2Model extends PrismComponent
 		} catch (IOException e) {
 			throw new PrismException("File I/O error reading from \"" + playersFile + "\"");
 		}
-		System.out.println("************************");
-		// System.out.println(model.getNumStates());
-		System.out.println("Num of States" + smg.getNumStates());
-		System.out.println("Num of StateOwner" + smg.stateOwners.stateOwners.size());
-		// System.out.println("Num of Player Names" +  smg.getPlayer(0));
-		System.out.println("************************");
-		System.out.println(smg);
 	}
 }

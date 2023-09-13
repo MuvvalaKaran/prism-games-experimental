@@ -566,13 +566,11 @@ public class SMGModelChecker extends ProbModelChecker
 
 		// set coalition:
 		if (coalition != null){
-			System.out.println("Coalition Already SET!!!!!!!");
 			((SMG<Double>) model).setCoalition(coalition);
 		}
 
 		// If no info, player 1 is alone by default
 		else {
-			System.out.println("Setting Coalition NOW!!!!!!!");
 			Coalition coalitionNew = new Coalition();
 			List<String> coalitionNewPlayers = new ArrayList<String>();
 			coalitionNewPlayers.add("1");

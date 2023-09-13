@@ -217,7 +217,6 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 	@Override
 	public void addStates(int numToAdd)
 	{
-		System.out.println("Calling Add states from MDP Simple");
 		for (int i = 0; i < numToAdd; i++) {
 			trans.add(new ArrayList<Distribution<Value>>());
 			// comment for SMG Explicit File constrution

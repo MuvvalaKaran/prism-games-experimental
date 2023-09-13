@@ -603,9 +603,6 @@ public class StateModelChecker extends PrismComponent
 		// Do model checking and store result vector
 		timer = System.currentTimeMillis();
 		// check expression for all states (null => statesOfInterest=all)
-		System.out.println("Model Type:" + model.getModelType());
-		System.out.println("Model Num states:" + model.getNumStates());
-		System.out.println("Num of StateOwners" + model.getStatesList());
 		vals = checkExpression(model, expr, null);
 		timer = System.currentTimeMillis() - timer;
 		mainLog.println("\nTime for model checking: " + timer / 1000.0 + " seconds.");

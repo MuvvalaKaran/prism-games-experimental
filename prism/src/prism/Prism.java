@@ -2108,8 +2108,6 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 					currentModelExpl = expf2model.build(explicitFilesStatesFile, explicitFilesTransFile, explicitFilesLabelsFile, explicitFilesPlayersFile, currentModelInfo, explicitFilesNumStates);
 					currentModel = null;
 					currentModelBuildType = ModelBuildType.EXPLICIT;
-					System.out.println(currentModelExpl.getNumStates());
-					System.out.println(currentModelExpl.getStatesList());
 					// Also build a Model/RewardGenerator
 					// (the latter since rewards are built later, the former e.g. for simulation)
 					currentModelGenerator = new ModelModelGenerator<>(currentModelExpl, currentModelInfo);

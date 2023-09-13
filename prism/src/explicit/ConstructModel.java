@@ -281,9 +281,6 @@ public class ConstructModel extends PrismComponent
 	        ((ModelExplicit<Value>) modelSimple).setVarList(varList);
 		}
 
-		System.out.println("Adding states using PRISM Explicit approach (Not from files ):");
-		System.out.println("Before calling the add state function :" + modelSimple.getNumStates());
-
 		// Initialise states storage
 		states = new IndexedSet<State>(true);
 		explore = new LinkedList<State>();
