@@ -182,11 +182,9 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		maxNumDistrsOk = true;
 		trans = new ArrayList<List<Distribution<Value>>>(numStates);
 		for (int i = 0; i < numStates; i++) {
-			// comment for SMG Explicit File constrution
-			addState();
-			// trans.add(new ArrayList<Distribution<Value>>());
+			// addState();   // For SMG Explicit File constrution
+			trans.add(new ArrayList<Distribution<Value>>()); // For Normal SMG Explicit constrution
 		}
-		// numStates--;
 		actions = new ChoiceActionsSimple();
 	}
 
@@ -220,7 +218,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		for (int i = 0; i < numToAdd; i++) {
 			trans.add(new ArrayList<Distribution<Value>>());
 			// comment for SMG Explicit File constrution
-			// numStates++;
+			numStates++;
 		}
 	}
 
