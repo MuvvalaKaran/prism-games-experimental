@@ -639,6 +639,9 @@ public class ProbModelChecker extends NonProbModelChecker
 		}
 		// Extract coalition info
 		Coalition coalition = expr.getCoalition();
+		System.out.println(expr);
+		System.out.println("------------------------------------------");
+		System.out.println(coalition);
 		
 		// For non-games (i.e., models with a single player), deal with the coalition operator here and then remove it
 		if (coalition != null && !model.getModelType().multiplePlayers()) {

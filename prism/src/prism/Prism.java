@@ -2104,9 +2104,12 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 					break;
 				case EXPLICIT_FILES:
 					ExplicitFiles2Model expf2model = new ExplicitFiles2Model(this);
+					// This is then passed to model checker when the explicit flag is on in modelCheck() on line 3113
 					currentModelExpl = expf2model.build(explicitFilesStatesFile, explicitFilesTransFile, explicitFilesLabelsFile, explicitFilesPlayersFile, currentModelInfo, explicitFilesNumStates);
 					currentModel = null;
 					currentModelBuildType = ModelBuildType.EXPLICIT;
+					System.out.println(currentModelExpl.getNumStates());
+					System.out.println(currentModelExpl.getStatesList());
 					// Also build a Model/RewardGenerator
 					// (the latter since rewards are built later, the former e.g. for simulation)
 					currentModelGenerator = new ModelModelGenerator<>(currentModelExpl, currentModelInfo);
