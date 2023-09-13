@@ -182,8 +182,11 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 		maxNumDistrsOk = true;
 		trans = new ArrayList<List<Distribution<Value>>>(numStates);
 		for (int i = 0; i < numStates; i++) {
-			trans.add(new ArrayList<Distribution<Value>>());
+			// comment for SMG Explicit File constrution
+			addState();
+			// trans.add(new ArrayList<Distribution<Value>>());
 		}
+		// numStates--;
 		actions = new ChoiceActionsSimple();
 	}
 
@@ -214,9 +217,11 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 	@Override
 	public void addStates(int numToAdd)
 	{
+		System.out.println("Calling Add states from MDP Simple");
 		for (int i = 0; i < numToAdd; i++) {
 			trans.add(new ArrayList<Distribution<Value>>());
-			numStates++;
+			// comment for SMG Explicit File constrution
+			// numStates++;
 		}
 	}
 
@@ -240,6 +245,7 @@ public class MDPSimple<Value> extends MDPExplicit<Value> implements NondetModelS
 			if (infos.length < 3) {
 				throw new PrismException("First line of .tra file must read #states, #choices, #transitions");
 			}
+			// read the # of states in the file and initialize an MDP with that many states.
 			int n = Integer.parseInt(infos[0]);
 			int expectedNumChoices = Integer.parseInt(infos[1]);
 			int expectedNumTransitions = Integer.parseInt(infos[2]);

@@ -171,13 +171,19 @@ public class PlayerInfo
 	 */
 	public int getPlayer(int origPlayer)
 	{
-		if (coalitionPlayerMap == null) {
-			// No coalition: just return index
-			return origPlayer;
-		} else {
-			// Coalition defined: look up if player 0 or 1
-			// (note: undefined players are mapped to player 1)
-			return origPlayer == -1 ? 0 : coalitionPlayerMap[origPlayer];
-		}
+		// This is a hacky solution. Just return the original player if your play TWO-player (only 2!) adv SMG game
+		return origPlayer;
+		
+		// Use this code if are playing a COOP game.
+		// if (coalitionPlayerMap == null) {
+		// 	// No coalition: just return index
+		// 	return origPlayer;
+		// } else {
+		// 	// Coalition defined: look up if player 0 or 1
+		// 	// (note: undefined players are mapped to player 1)
+		// 	System.out.println(origPlayer + ":"  + coalitionPlayerMap[origPlayer]);			
+		// 	return origPlayer == -1 ? 0 : coalitionPlayerMap[origPlayer];
+			
+		// }
 	}
 }
